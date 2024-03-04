@@ -19,14 +19,14 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Genre> _genres = []; // liste des genres
   List<Genre> _selectedGenres = []; // liste des genres sélectionnés
 
-
   @override
   void initState() {
     super.initState();
     getGenres().then((value) => {
-      setState(() => _genres = value),
-      getMovies("", _genres).then((value) => setState(() => _movies = value))
-    });
+          setState(() => _genres = value),
+          getMovies("", _genres)
+              .then((value) => setState(() => _movies = value))
+        });
   }
 
   Widget build(BuildContext context) {
@@ -59,46 +59,54 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     backgroundColor: Colors.black,
                   ),
-                  content: Column(
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(
-                          // mettre une icône et un texte dans le champ de texte
-                          icon: Icon(Icons.search),
-                          labelText: 'Name of the movie',
-                        ),
-                        controller: _searchController,
-                      ),
-                      DropdownButton(
-                        items: _genres
-                          .map((genre) => DropdownMenuItem(
-                              value: genre,
-                              child: Text(genre.name),
-                            ))
-                          .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedGenres.add(value as Genre);
-                          });
-                        },
-                        hint: Text('Select a genre'),
-                      ),
-                      for (var genre in _selectedGenres)
-                        Chip(
-                          label: Text(genre.name),
-                          onDeleted: () {
-                            setState(() {
-                              _selectedGenres.remove(genre);
-                            });
-                          },
-                        ),
-                    ],
+                  content: StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                      return Column(
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(
+                              // mettre une icône et un texte dans le champ de texte
+                              icon: Icon(Icons.search),
+                              labelText: 'Name of the movie',
+                            ),
+                            controller: _searchController,
+                          ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          DropdownButton(
+                            items: _genres
+                                .map((genre) => DropdownMenuItem(
+                                      value: genre,
+                                      child: Text(genre.name),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedGenres.add(value as Genre);
+                              });
+                            },
+                            hint: Text('Select a genre'),
+                          ),
+                          for (var genre in _selectedGenres)
+                            Chip(
+                              label: Text(genre.name),
+                              onDeleted: () {
+                                setState(() {
+                                  _selectedGenres.remove(genre);
+                                });
+                              },
+                            ),
+                        ],
+                      );
+                    },
                   ),
                   buttons: [
                     // créer un bouton dans l'alerte
                     DialogButton(
                       onPressed: () {
-                        getMovies(_searchController.text, _genres).then((value) {
+                        getMovies(_searchController.text, _genres)
+                            .then((value) {
                           setState(() {
                             _movies = value.where((movie) {
                               if (_selectedGenres.isEmpty) {
@@ -112,8 +120,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               return false;
                             }).toList();
                             _searchController.clear();
-                            });
                           });
+                        });
                         Navigator.pop(context); // permet de fermer l'alerte
                       },
                       child: Text(
@@ -147,7 +155,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 _movies[index].poster_path == null
                     ? 'https://image.tmdb.org/t/p/w200/8Y43POKjjKDGI9MH89NW0NAzzp8.jpg'
                     : 'https://image.tmdb.org/t/p/w200/${_movies[index].poster_path}', // charge l'image depuis internet
-                fit: BoxFit.cover, // fit permet de mettre l'image à la taille du cadre
+                fit: BoxFit
+                    .cover, // fit permet de mettre l'image à la taille du cadre
               ),
             ),
           );
